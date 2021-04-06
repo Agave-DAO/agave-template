@@ -3,7 +3,6 @@ pragma solidity 0.4.24;
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 import "./external/IHookedTokenManager.sol";
 import "./external/IIssuance.sol";
-//import "./external/IConvictionVoting.sol";
 import "./external/Agreement.sol";
 import "./external/DisputableVoting.sol";
 
@@ -23,7 +22,6 @@ contract AgaveTemplate is BaseTemplate {
 //     bytes32 private constant DISPUTABLE_VOTING_APP_ID = 0x39aa9e500efe56efda203714d12c78959ecbf71223162614ab5b56eaba014145; // probably disputable-voting.open.aragonpm.eth
 
     // xdai
-//    bytes32 private constant CONVICTION_VOTING_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("disputable-conviction-voting")));
     bytes32 private constant HOOKED_TOKEN_MANAGER_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("hooked-token-manager-no-controller")));
     bytes32 private constant DYNAMIC_ISSUANCE_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("dynamic-issuance")));
     bytes32 private constant BRIGHTID_REGISTER_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("brightid-register")));
@@ -52,7 +50,6 @@ contract AgaveTemplate is BaseTemplate {
     event VoteToken(MiniMeToken voteToken);
     event AgentAddress(Agent agentAddress);
     event HookedTokenManagerAddress(IHookedTokenManager hookedTokenManagerAddress);
-//    event ConvictionVotingAddress(IConvictionVoting convictionVoting);
     event AgreementAddress(Agreement agreement);
 
     mapping(address => DeployedContracts) internal senderDeployedContracts;
@@ -127,16 +124,11 @@ contract AgaveTemplate is BaseTemplate {
         _createIssuancePermissions(acl, issuance, disputableVoting);
         _createHookedTokenManagerPermissions(acl, disputableVoting, hookedTokenManager, issuance);
 
-//        IConvictionVoting convictionVoting = _installConvictionVoting(dao, MiniMeToken(hookedTokenManager.token()),
-//            _stableToken, _setupAddresses[0], fundingPoolAgent, _convictionSettings);
-//        _createConvictionVotingPermissions(acl, convictionVoting, disputableVoting, _setupAddresses[1]);
         _createVaultPermissions(acl, fundingPoolAgent, disputableVoting, disputableVoting);
 
         _createPermissionForTemplate(acl, hookedTokenManager, hookedTokenManager.SET_HOOK_ROLE());
-//        hookedTokenManager.registerHook(convictionVoting);
         _removePermissionFromTemplate(acl, hookedTokenManager, hookedTokenManager.SET_HOOK_ROLE());
 
-//        _storeDeployedContractsTxTwo(convictionVoting);
     }
 
     /**
@@ -159,15 +151,12 @@ contract AgaveTemplate is BaseTemplate {
         (Kernel dao,
         ACL acl,
         DisputableVoting disputableVoting,,,) = _getDeployedContractsTxOne();
-//        IConvictionVoting convictionVoting = _getDeployedContractsTxTwo();
 
         Agreement agreement = _installAgreementApp(dao, _arbitrator, _setAppFeesCashier, _title, _content, _stakingFactory);
         _createAgreementPermissions(acl, agreement, disputableVoting, disputableVoting);
         acl.createPermission(agreement, disputableVoting, disputableVoting.SET_AGREEMENT_ROLE(), disputableVoting);
-//        acl.createPermission(agreement, convictionVoting, convictionVoting.SET_AGREEMENT_ROLE(), disputableVoting);
 
         agreement.activate(disputableVoting, _feeToken, _challengeDuration, _convictionVotingFees[0], _convictionVotingFees[1]);
-//        agreement.activate(convictionVoting, _feeToken, _challengeDuration, _convictionVotingFees[0], _convictionVotingFees[1]);
         _removePermissionFromTemplate(acl, agreement, agreement.MANAGE_DISPUTABLE_ROLE());
 
         _transferRootPermissionsFromTemplateAndFinalizeDAO(dao, disputableVoting);
