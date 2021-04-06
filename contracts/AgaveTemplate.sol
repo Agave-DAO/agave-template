@@ -2,7 +2,6 @@ pragma solidity 0.4.24;
 
 import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 import "./external/IHookedTokenManager.sol";
-import "./external/IIssuance.sol";
 import "./external/Agreement.sol";
 import "./external/DisputableVoting.sol";
 
@@ -16,14 +15,12 @@ contract AgaveTemplate is BaseTemplate {
     // rinkeby
 //     bytes32 private constant CONVICTION_VOTING_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("disputable-conviction-voting")));
 //     bytes32 private constant HOOKED_TOKEN_MANAGER_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("hooked-token-manager-no-controller")));
-//     bytes32 private constant DYNAMIC_ISSUANCE_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("dynamic-issuance")));
 //     bytes32 private constant BRIGHTID_REGISTER_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("brightid-register")));
 //     bytes32 private constant AGREEMENT_APP_ID = 0x41dd0b999b443a19321f2f34fe8078d1af95a1487b49af4c2ca57fb9e3e5331e; // agreement-1hive.open.aragonpm.eth
 //     bytes32 private constant DISPUTABLE_VOTING_APP_ID = 0x39aa9e500efe56efda203714d12c78959ecbf71223162614ab5b56eaba014145; // probably disputable-voting.open.aragonpm.eth
 
     // xdai
     bytes32 private constant HOOKED_TOKEN_MANAGER_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("hooked-token-manager-no-controller")));
-    bytes32 private constant DYNAMIC_ISSUANCE_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("dynamic-issuance")));
     bytes32 private constant BRIGHTID_REGISTER_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("brightid-register")));
     bytes32 private constant AGREEMENT_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("agreement")));
     bytes32 private constant DISPUTABLE_VOTING_APP_ID = keccak256(abi.encodePacked(apmNamehash("open"), keccak256("disputable-voting")));
@@ -41,9 +38,7 @@ contract AgaveTemplate is BaseTemplate {
         DisputableVoting disputableVoting;
         Agent fundingPoolAgent;
         IHookedTokenManager hookedTokenManager;
-        IIssuance issuance;
         MiniMeToken voteToken;
-//        IConvictionVoting convictionVoting;
     }
 
     event DisputableVotingAddress(DisputableVoting disputableVoting);
@@ -99,12 +94,10 @@ contract AgaveTemplate is BaseTemplate {
 
     /**
     * @dev Add and initialise issuance and conviction voting
-    * @param _issuanceSettings Array of issuance settings: [targetRatio, maxAdjustmentRatioPerSecond]
     * @param _setupAddresses Array of addresses: [stableTokenOracle, convictionVotingPauseAdmin]
     * @param _convictionSettings array of conviction settings: [decay, max_ratio, weight, min_threshold_stake_percentage]
     */
     function createDaoTxTwo(
-        uint256[2] _issuanceSettings,
         ERC20 _stableToken,
         address[2] _setupAddresses,
         uint64[4] _convictionSettings
@@ -120,9 +113,7 @@ contract AgaveTemplate is BaseTemplate {
         IHookedTokenManager hookedTokenManager,
         MiniMeToken voteToken) = _getDeployedContractsTxOne();
 
-        IIssuance issuance = _installIssuance(dao, hookedTokenManager, fundingPoolAgent, _issuanceSettings);
-        _createIssuancePermissions(acl, issuance, disputableVoting);
-        _createHookedTokenManagerPermissions(acl, disputableVoting, hookedTokenManager, issuance);
+        _createHookedTokenManagerPermissions(acl, disputableVoting, hookedTokenManager);
 
         _createVaultPermissions(acl, fundingPoolAgent, disputableVoting, disputableVoting);
 
@@ -192,18 +183,6 @@ contract AgaveTemplate is BaseTemplate {
         return DisputableVoting(_installNonDefaultApp(_dao, DISPUTABLE_VOTING_APP_ID, initializeData));
     }
 
-    function _installIssuance(
-        Kernel _dao,
-        IHookedTokenManager _hookedTokenManager,
-        Agent _fundingPoolAgent,
-        uint256[2] _issuanceSettings
-    )
-        internal returns (IIssuance)
-    {
-        IIssuance issuance = IIssuance(_installNonDefaultApp(_dao, DYNAMIC_ISSUANCE_APP_ID));
-        issuance.initialize(_hookedTokenManager, _fundingPoolAgent, _issuanceSettings[0], _issuanceSettings[1]);
-        return issuance;
-    }
 
 
     function _installAgreementApp(Kernel _dao, address _arbitrator, bool _setAppFeesCashier, string _title, bytes _content, address _stakingFactory)
@@ -228,14 +207,10 @@ contract AgaveTemplate is BaseTemplate {
         _acl.createPermission(_disputableVoting, _disputableVoting, _disputableVoting.CHANGE_EXECUTION_DELAY_ROLE(), _disputableVoting);
     }
 
-    function _createIssuancePermissions(ACL _acl, IIssuance _issuance, DisputableVoting _disputableVoting) internal {
-        _acl.createPermission(_disputableVoting, _issuance, _issuance.UPDATE_SETTINGS_ROLE(), _disputableVoting);
-    }
 
-
-    function _createHookedTokenManagerPermissions(ACL acl, DisputableVoting disputableVoting, IHookedTokenManager hookedTokenManager, IIssuance issuance) internal {
-        acl.createPermission(issuance, hookedTokenManager, hookedTokenManager.MINT_ROLE(), disputableVoting);
-        acl.createPermission(issuance, hookedTokenManager, hookedTokenManager.BURN_ROLE(), disputableVoting);
+    function _createHookedTokenManagerPermissions(ACL acl, DisputableVoting disputableVoting, IHookedTokenManager hookedTokenManager) internal {
+        acl.createPermission(disputableVoting, hookedTokenManager, hookedTokenManager.MINT_ROLE(), disputableVoting);
+        acl.createPermission(disputableVoting, hookedTokenManager, hookedTokenManager.BURN_ROLE(), disputableVoting);
         // acl.createPermission(issuance, hookedTokenManager, hookedTokenManager.ISSUE_ROLE(), disputableVoting);
         // acl.createPermission(issuance, hookedTokenManager, hookedTokenManager.ASSIGN_ROLE(), disputableVoting);
         // acl.createPermission(issuance, hookedTokenManager, hookedTokenManager.REVOKE_VESTINGS_ROLE(), disputableVoting);
