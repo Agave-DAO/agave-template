@@ -4,7 +4,6 @@ import "@aragon/templates-shared/contracts/BaseTemplate.sol";
 import "./external/IHookedTokenManager.sol";
 import "./external/IIssuance.sol";
 import "./external/IConvictionVoting.sol";
-import "@1hive/apps-brightid-register/contracts/BrightIdRegister.sol";
 import "./external/Agreement.sol";
 import "./external/DisputableVoting.sol";
 
@@ -54,7 +53,6 @@ contract AgaveTemplate is BaseTemplate {
     event AgentAddress(Agent agentAddress);
     event HookedTokenManagerAddress(IHookedTokenManager hookedTokenManagerAddress);
     event ConvictionVotingAddress(IConvictionVoting convictionVoting);
-    event BrightIdRegisterAddress(BrightIdRegister brightIdRegister);
     event AgreementAddress(Agreement agreement);
 
     mapping(address => DeployedContracts) internal senderDeployedContracts;
@@ -89,7 +87,6 @@ contract AgaveTemplate is BaseTemplate {
 
         MiniMeToken voteToken = _voteToken; // Prevents stack too deep error.
         DisputableVoting disputableVoting = _installDisputableVotingApp(dao, voteToken, _disputableVotingSettings);
-        BrightIdRegister brightIdRegister = _installBrightIdRegister(dao, acl, disputableVoting, _1hiveContext, _verifiers, _brightIdSettings);
         IHookedTokenManager hookedTokenManager = _installHookedTokenManagerApp(dao, voteToken);
 
         _createDisputableVotingPermissions(acl, disputableVoting);
@@ -226,17 +223,6 @@ contract AgaveTemplate is BaseTemplate {
         convictionVoting.initialize(_stakeAndRequestToken, _stakeAndRequestToken, _stableToken, _stableTokenOracle, _agent, _convictionSettings[0], _convictionSettings[1], _convictionSettings[2], _convictionSettings[3]);
         emit ConvictionVotingAddress(convictionVoting);
         return convictionVoting;
-    }
-
-    function _installBrightIdRegister(Kernel _dao, ACL _acl, DisputableVoting _disputableVoting, bytes32 _1hiveContext, address[] _verifiers, uint256[3] _brightIdSettings)
-        internal returns (BrightIdRegister)
-    {
-        BrightIdRegister brightIdRegister = BrightIdRegister(_installNonDefaultApp(_dao, BRIGHTID_REGISTER_APP_ID));
-        brightIdRegister.initialize(_1hiveContext, _verifiers, _brightIdSettings[0], _brightIdSettings[1], _brightIdSettings[2]);
-        emit BrightIdRegisterAddress(brightIdRegister);
-
-        _acl.createPermission(_disputableVoting, brightIdRegister, brightIdRegister.UPDATE_SETTINGS_ROLE(), _disputableVoting);
-        return brightIdRegister;
     }
 
     function _installAgreementApp(Kernel _dao, address _arbitrator, bool _setAppFeesCashier, string _title, bytes _content, address _stakingFactory)
