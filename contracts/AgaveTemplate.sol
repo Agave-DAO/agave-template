@@ -65,9 +65,7 @@ contract AgaveTemplate is BaseTemplate {
     */
     function createDaoTxOne(
         MiniMeToken _voteToken,
-        uint64[7] _disputableVotingSettings,
-        address[] _verifiers,
-        uint256[3] _brightIdSettings
+        uint64[7] _disputableVotingSettings
     )
         public // Increases stack limit over using external
     {
