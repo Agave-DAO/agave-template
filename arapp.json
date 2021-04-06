@@ -1,26 +1,26 @@
 {
   "environments": {
     "default": {
-      "appName": "honey-pot-template.aragonpm.eth",
+      "appName": "agave-template.open.aragonpm.eth",
       "registry": "0x5f6f7e8cc7346a11ca2def8f827b7a0b612c56a1",
       "network": "rpc"
     },
     "devnet": {
-      "appName": "honey-pot-template.aragonpm.eth",
+      "appName": "agave-template.open.aragonpm.eth",
       "network": "devnet"
     },
     "xdai": {
-      "appName": "honey-pot-template.aragonpm.eth",
+      "appName": "agave-template.open.aragonpm.eth",
       "address": "0xf60cd4f86141d7fe4a1a9961451ea09230a14617",
       "network": "xdai",
       "registry": "0xaafca6b0c89521752e559650206d7c925fd0e530"
     },
     "rinkeby": {
-      "appName": "honey-pot-template.aragonpm.eth",
+      "appName": "agave-template.open.aragonpm.eth",
       "address": "0xf009a046e3903a838deed463ba1d9c511eaa82f1",
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D"
     }
   },
-  "path": "contracts/HoneyPotTemplate.sol"
+  "path": "contracts/AgaveTemplate.sol"
 }
