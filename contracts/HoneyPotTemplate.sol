@@ -8,7 +8,7 @@ import "@1hive/apps-brightid-register/contracts/BrightIdRegister.sol";
 import "./external/Agreement.sol";
 import "./external/DisputableVoting.sol";
 
-contract HoneyPotTemplate is BaseTemplate {
+contract AgaveTemplate is BaseTemplate {
 
     string constant private ERROR_MISSING_MEMBERS = "MISSING_MEMBERS";
     string constant private ERROR_BAD_VOTE_SETTINGS = "BAD_SETTINGS";
