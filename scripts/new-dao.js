@@ -1,13 +1,13 @@
 const fs = require('fs')
 const path = require("path");
-const HoneyPotTemplate = artifacts.require("HoneyPotTemplate")
+const AgaveTemplate = artifacts.require("AgaveTemplate")
 const MiniMeToken = artifacts.require("MiniMeToken")
 const HookedTokenManager = artifacts.require("IHookedTokenManager")
 
 const { pct16, bn, bigExp, getEventArgument, ONE_DAY } = require('@aragon/contract-helpers-test')
 
 const FROM_ACCOUNT = "0xdf456B614fE9FF1C7c0B380330Da29C96d40FB02"
-const DAO_ID = "honey-pot" + Math.random() // Note this must be unique for each deployment, change it for subsequent deployments
+const DAO_ID = "agave" + Math.random() // Note this must be unique for each deployment, change it for subsequent deployments
 const NETWORK_ARG = "--network"
 const DAO_ID_ARG = "--daoid"
 
@@ -18,7 +18,7 @@ const network = () => argValue(NETWORK_ARG, "local")
 const daoId = () => argValue(DAO_ID_ARG, DAO_ID)
 const configFilePath = () => network() === "rinkeby" ? '../output/rinkeby-config.json' : '../output/xdai-config.json'
 
-const honeyTemplateAddress = () => {
+const agaveTemplateAddress = () => {
   if (network() === "rinkeby") {
     const Arapp = require("../arapp")
     return Arapp.environments.rinkeby.address
@@ -112,17 +112,17 @@ const networkDependantConfig = {
 
 module.exports = async (callback) => {
   try {
-    const honeyPotTemplate = await HoneyPotTemplate.at(honeyTemplateAddress())
-    console.log(`Template address: `, honeyPotTemplate.address)
-    // await createDao(honeyPotTemplate) // After doing this copy the necessary addresses into the Celeste deployment config. Atleast BrightIdRegister maybe Celeste governers.
-    await finaliseDao(honeyPotTemplate) // Before doing this copy the celeste/arbitrator address into the relevant config. And stable token address and oracle if not already.
+    const agaveTemplate = await AgaveTemplate.at(agaveTemplateAddress())
+    console.log(`Template address: `, agaveTemplate.address)
+    // await createDao(agaveTemplate) // After doing this copy the necessary addresses into the Celeste deployment config. Atleast BrightIdRegister maybe Celeste governers.
+    await finaliseDao(agaveTemplate) // Before doing this copy the celeste/arbitrator address into the relevant config. And stable token address and oracle if not already.
   } catch (error) {
     console.log(error)
   }
   callback()
 }
 
-const createDao = async (honeyPotTemplate) => {
+const createDao = async (agaveTemplate) => {
   console.log(`Creating DAO...`)
   const brightIdSettings = [BRIGHTID_VERIFICATIONS_REQUIRED, getNetworkDependantConfig().BRIGHTID_REGISTRATION_PERIOD,
     BRIGHTID_VERIFICATION_TIMESTAMP_VARIANCE]
@@ -130,7 +130,7 @@ const createDao = async (honeyPotTemplate) => {
     getNetworkDependantConfig().VOTE_DELEGATED_VOTING_PERIOD, getNetworkDependantConfig().VOTE_QUIET_ENDING_PERIOD,
     getNetworkDependantConfig().VOTE_QUIET_ENDING_EXTENSION, getNetworkDependantConfig().VOTE_EXECUTION_DELAY]
 
-  const createDaoTxOneReceipt = await honeyPotTemplate.createDaoTxOne(
+  const createDaoTxOneReceipt = await agaveTemplate.createDaoTxOne(
     getNetworkDependantConfig().FEE_TOKEN,
     votingSettings,
     BRIGHTID_1HIVE_CONTEXT,
@@ -162,9 +162,9 @@ const createDao = async (honeyPotTemplate) => {
   })
 }
 
-const finaliseDao = async (honeyPotTemplate) => {
+const finaliseDao = async (agaveTemplate) => {
   console.log(`Finalising DAO...`)
-  const createDaoTxTwoReceipt = await honeyPotTemplate.createDaoTxTwo(
+  const createDaoTxTwoReceipt = await agaveTemplate.createDaoTxTwo(
     [ISSUANCE_TARGET_RATIO, ISSUANCE_MAX_ADJUSTMENT_PER_SECOND],
     getNetworkDependantConfig().STABLE_TOKEN_ADDRESS,
     [getNetworkDependantConfig().STABLE_TOKEN_ORACLE, getNetworkDependantConfig().CONVICTION_VOTING_PAUSE_ADMIN],
@@ -177,7 +177,7 @@ const finaliseDao = async (honeyPotTemplate) => {
       Gas used: ${ createDaoTxTwoReceipt.receipt.gasUsed }`)
   updateConfigFile({ convictionVotingProxy: convictionVotingProxy })
 
-  const createDaoTxThreeReceipt = await honeyPotTemplate.createDaoTxThree(
+  const createDaoTxThreeReceipt = await agaveTemplate.createDaoTxThree(
     getNetworkDependantConfig().ARBITRATOR,
     SET_APP_FEES_CASHIER,
     AGREEMENT_TITLE,
