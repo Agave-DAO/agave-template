@@ -66,7 +66,6 @@ contract AgaveTemplate is BaseTemplate {
     function createDaoTxOne(
         MiniMeToken _voteToken,
         uint64[7] _disputableVotingSettings,
-        bytes32 _1hiveContext,
         address[] _verifiers,
         uint256[3] _brightIdSettings
     )
